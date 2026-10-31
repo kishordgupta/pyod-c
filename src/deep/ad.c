@@ -301,14 +301,24 @@ static void matmul_backward(ad_tensor *t) {
     if (b->requires_grad) ensure_grad(b);
     for (size_t q = 0; q < batch; q++) {
         const double *g = t->grad + q * n * m, *ad = a->data + q * n * k, *bd = b->data + q * k * m;
-        if (a->requires_grad) { /* dA = G B^T */
+        if (a->requires_grad) { /* dA = G B^T: row dot products, both read contiguously */
             double *ga = a->grad + q * n * k;
-            for (size_t i = 0; i < n; i++)
-                for (size_t j = 0; j < m; j++) {
-                    double gij = g[i * m + j];
-                    if (gij == 0.0) continue;
-                    for (size_t p = 0; p < k; p++) ga[i * k + p] += gij * bd[p * m + j];
+            for (size_t i = 0; i < n; i++) {
+                const double *gi = g + i * m;
+                for (size_t p = 0; p < k; p++) {
+                    const double *bp = bd + p * m;
+                    double s0 = 0.0, s1 = 0.0, s2 = 0.0, s3 = 0.0;
+                    size_t j = 0;
+                    for (; j + 4 <= m; j += 4) {
+                        s0 += gi[j] * bp[j];
+                        s1 += gi[j + 1] * bp[j + 1];
+                        s2 += gi[j + 2] * bp[j + 2];
+                        s3 += gi[j + 3] * bp[j + 3];
+                    }
+                    for (; j < m; j++) s0 += gi[j] * bp[j];
+                    ga[i * k + p] += (s0 + s1) + (s2 + s3);
                 }
+            }
         }
         if (b->requires_grad) { /* dB = A^T G */
             double *gb = b->grad + q * k * m;

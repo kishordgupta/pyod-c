@@ -240,22 +240,45 @@ static int cmp_dist_idx(const void *a, const void *b) {
     return (x->i > y->i) - (x->i < y->i);
 }
 
+static int dist_idx_less(dist_idx a, dist_idx b) { return a.d < b.d || (a.d == b.d && a.i < b.i); }
+
+/* Max-heap on (distance, index): the root is the worst of the k kept. */
+static void heap_sift_down(dist_idx *h, size_t n, size_t i) {
+    for (;;) {
+        size_t l = 2 * i + 1, r = l + 1, m = i;
+        if (l < n && dist_idx_less(h[m], h[l])) m = l;
+        if (r < n && dist_idx_less(h[m], h[r])) m = r;
+        if (m == i) return;
+        dist_idx t = h[i];
+        h[i] = h[m], h[m] = t, i = m;
+    }
+}
+
+/* Keeps the k best in a bounded heap: O(n log k) instead of sorting all n. */
 size_t k_nearest(const pyod_matrix *train, const double *q, size_t k, size_t skip, size_t *idx, double *dist) {
-    size_t n = train->rows, m = 0;
-    dist_idx *all = NEW(dist_idx, n);
-    if (!all) return 0;
+    size_t n = train->rows, m = 0, avail = n - (skip < n);
+    if (k > avail) k = avail;
+    if (k == 0) return 0;
+    dist_idx *h = NEW(dist_idx, k);
+    if (!h) return 0;
     for (size_t i = 0; i < n; i++) {
         if (i == skip) continue;
-        all[m].d = euclidean(&PYOD_AT(train, i, 0), q, train->cols);
-        all[m++].i = i;
+        dist_idx c = {euclidean(&PYOD_AT(train, i, 0), q, train->cols), i};
+        if (m < k) {
+            h[m++] = c;
+            if (m == k)
+                for (size_t j = k / 2; j-- > 0;) heap_sift_down(h, k, j);
+        } else if (dist_idx_less(c, h[0])) {
+            h[0] = c;
+            heap_sift_down(h, k, 0);
+        }
     }
-    qsort(all, m, sizeof(dist_idx), cmp_dist_idx);
-    if (k > m) k = m;
+    qsort(h, k, sizeof(dist_idx), cmp_dist_idx);
     for (size_t i = 0; i < k; i++) {
-        if (idx) idx[i] = all[i].i;
-        if (dist) dist[i] = all[i].d;
+        if (idx) idx[i] = h[i].i;
+        if (dist) dist[i] = h[i].d;
     }
-    free(all);
+    free(h);
     return k;
 }
 
