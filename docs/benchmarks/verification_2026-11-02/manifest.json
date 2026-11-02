@@ -1,0 +1,155 @@
+{
+  "created_utc": "2026-11-02T08:12:28.961787+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.12.16 (main, Oct 26 2026, 13:59:40)",
+  "command": [
+    "work/benchmark_pyod.py",
+    "--c-root",
+    "work/pyod-c",
+    "--rs-root",
+    "work/pyod-rs",
+    "--out",
+    "work/local-recheck-controlled",
+    "--threads",
+    "1",
+    "--repeats",
+    "3"
+  ],
+  "packages": {
+    "pyod": "3.6.7",
+    "numpy": "2.0.2",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.6.1",
+    "numba": "0.60.0",
+    "threadpoolctl": "3.7.0"
+  },
+  "configuration": {
+    "c_root": "work/pyod-c",
+    "rs_root": "work/pyod-rs",
+    "out": "work/local-recheck-controlled",
+    "train": 2000,
+    "test": 1000,
+    "features": 10,
+    "seed": 42,
+    "repeats": 3,
+    "warmup": 1,
+    "threads": 1,
+    "models": [
+      "ABOD",
+      "COPOD",
+      "ECOD",
+      "HBOS",
+      "IForest",
+      "KNN",
+      "LOF",
+      "PCA"
+    ]
+  },
+  "data_sha256": {
+    "train": "dce046c29beaf99277626e83803b6d0cafc4921aae08a4c253e833784b617cbe",
+    "test": "92039ded307122c5691639c7f90097544c5022adb30a3fa5c6b3cd4a6444694e"
+  },
+  "native": {
+    "pyod-c": {
+      "commit": "f0ddd90e994b5cfa43c0b09d746624d9fa630cbe",
+      "dirty": true,
+      "binary_sha256": "b79d03417efc98d1df1f992612bccff4661f19c8eb433aac087280f35ec557fa"
+    },
+    "pyod-rs": {
+      "commit": "a2d84b837a8e52a78f5d9beb551b6618a82ae1f8",
+      "dirty": true,
+      "binary_sha256": "16b4772317c66d57551274ee773350d00c54080857f7094eb351a2e974e0b0fd"
+    }
+  },
+  "numpy_configuration": {
+    "Compilers": {
+      "c": {
+        "name": "clang",
+        "linker": "ld64",
+        "version": "15.0.0",
+        "commands": "cc"
+      },
+      "cython": {
+        "name": "cython",
+        "linker": "cython",
+        "version": "3.0.11",
+        "commands": "cython"
+      },
+      "c++": {
+        "name": "clang",
+        "linker": "ld64",
+        "version": "15.0.0",
+        "commands": "c++"
+      }
+    },
+    "Machine Information": {
+      "host": {
+        "cpu": "aarch64",
+        "family": "aarch64",
+        "endian": "little",
+        "system": "darwin"
+      },
+      "build": {
+        "cpu": "aarch64",
+        "family": "aarch64",
+        "endian": "little",
+        "system": "darwin"
+      }
+    },
+    "Build Dependencies": {
+      "blas": {
+        "name": "accelerate",
+        "found": true,
+        "version": "unknown",
+        "detection method": "system",
+        "include directory": "unknown",
+        "lib directory": "unknown",
+        "openblas configuration": "unknown",
+        "pc file directory": "unknown"
+      },
+      "lapack": {
+        "name": "accelerate",
+        "found": true,
+        "version": "unknown",
+        "detection method": "system",
+        "include directory": "unknown",
+        "lib directory": "unknown",
+        "openblas configuration": "unknown",
+        "pc file directory": "unknown"
+      }
+    },
+    "Python Information": {
+      "version": "3.12"
+    },
+    "SIMD Extensions": {
+      "baseline": [
+        "NEON",
+        "NEON_FP16",
+        "NEON_VFPV4",
+        "ASIMD"
+      ],
+      "found": [
+        "ASIMDHP"
+      ],
+      "not found": [
+        "ASIMDFHM"
+      ]
+    }
+  },
+  "timed_region": "fit + decision_function; excludes construction, imports, CSV loading, serialization and metrics; C output allocation included",
+  "seed_note": "seed sets shared data; IForest model seed is 42 in all backends, but random streams differ; repeats do not measure seed variability",
+  "threadpools": [
+    {
+      "user_api": "openmp",
+      "internal_api": "openmp",
+      "num_threads": 1,
+      "prefix": "libomp",
+      "filepath": "libomp.dylib",
+      "version": null
+    }
+  ],
+  "verification_note": "Supplementary November 2 check; eight classical models, separate from the accepted October 31 full benchmark. Native algorithm sources unchanged; working copies include the new benchmark helpers and documentation.",
+  "compiler": "Apple clang version 15.0.0 (clang-1500.1.0.2.5)",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
+}

@@ -38,6 +38,10 @@ Link with `-Iinclude build/libpyod.a -lm`. `examples/quickstart.c` is a complete
 program; `examples/compare.c` benchmarks several detectors like PyOD's
 `compare_all_models.py`.
 
+## Getting started
+
+See [the usage guide](docs/USAGE.md) for installation, complete examples, model selection, data preparation, and how to interpret scores, labels, probabilities and confidence. See [the benchmark guide](docs/BENCHMARKING.md) for the timing protocol and a shared-input comparison with PyOD.
+
 ## Interfaces
 
 | PyOD | C |
@@ -129,10 +133,12 @@ Speed-up over PyOD (geometric mean; above 1 is faster):
 | 5 neural detectors, 2,000 training rows | 1.2× | 1.4× | 2 / 1 / 2 |
 | 10 classical detectors, 20,000 training rows | 1.3× | 1.5× | 4 / 5 / 1 |
 
-- **Small data:** Python's fixed cost per call dominates. IForest and KDE run about 7× faster in both ports, and SUOD 3–5×.
-- **Large data:** that overhead stops mattering. PyOD's KNN uses sklearn's tree search (1.4 s on 20,000 rows) against brute force in Rust (1.9 s) and C (1.3 s).
-- **Rust vs C:** within about 10% of each other. Rust is about 2.5× faster on ECOD and COPOD; C is faster on CD, GMM and DIF.
-- **Neural models:** small networks favour the ports (AutoEncoder on 20,000 rows: C 1.0 s, Rust 1.4 s, PyOD 10.9 s). LUNAR's wide full-batch layers favour PyOD's BLAS: PyOD 1.7 s, Rust 7.1 s, C 37 s.
+- **Small data:** the ports are faster on many models; IForest and KDE are about 7× faster in this panel. Call overhead, backend and implementation choices all contribute; the timings do not isolate their individual effects.
+- **Large data:** the ranking can change. KNN takes about 1.37 s in PyOD, 1.92 s in Rust and 1.33 s in C at 20,000 training rows. Search strategy and workload size matter alongside language.
+- **Rust vs C:** per-model differences are substantial. Rust is about 2.3–2.5× faster on ECOD and COPOD here; C is faster on CD, GMM and DIF. The aggregate speedups do not imply a uniform per-model gap.
+- **Neural models:** AutoEncoder at 20,000 rows takes about 1.0 s in C, 1.35 s in Rust and 10.9 s in PyOD; LUNAR favours PyOD (1.69 s vs 7.08 s in Rust and 36.6 s in C). These compare the supplied CPU implementations and defaults, including different numerical backends.
+
+A speedup is `PyOD time / port time`; values below 1 mean the port is slower. A geometric mean gives each model one ratio and is not a prediction of application-wide savings. The extra single-thread PyOD column matters: for example, small-data GMM drops from 11 ms to 1.4 ms when limited to one thread. See [BENCHMARKING.md](docs/BENCHMARKING.md) before comparing or quoting these results.
 
 <details>
 <summary>All results (fastest in bold)</summary>

@@ -47,7 +47,8 @@ typedef struct {
 
 #define PYOD_AT(m, i, j) ((m)->data[(size_t)(i) * (m)->cols + (size_t)(j)])
 
-/* Wrap existing memory (not copied, not freed by pyod_matrix_free). */
+/* Wrap existing memory without copying. Caller retains ownership; do not pass
+ * a borrowed view to pyod_matrix_free (which frees its data pointer). */
 pyod_matrix pyod_matrix_view(double *data, size_t rows, size_t cols);
 /* Allocate a zeroed matrix; free with pyod_matrix_free. */
 pyod_status pyod_matrix_alloc(pyod_matrix *m, size_t rows, size_t cols);
